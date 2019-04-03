@@ -8,7 +8,7 @@ import datetime as dt
 
 
 # create engine
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+engine = create_engine("sqlite:///Resources/hawaii.sqlite?check_same_thread=False")
 # reflect an existing database into a new model
 Base = automap_base()
 # reflect the tables
