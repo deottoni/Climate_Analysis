@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, func
 from flask import Flask, jsonify
 import datetime as dt
 
+
 # create engine
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 # reflect an existing database into a new model
@@ -22,9 +23,9 @@ session = Session(engine)
 
 
 
-
 # Create app
 app = Flask(__name__)
+
 
 # Set routes
 @app.route("/")
@@ -51,11 +52,11 @@ def precipitation():
     precipitation = []
     for rain in qry:
         rain_dict = {}
-        rain_dict["date"] = rain.date
-        rain_dict["prcp"] = rain.prcp
+        rain_dict[rain.date] = rain.prcp
         precipitation.append(rain_dict)
 
     return jsonify(precipitation)
+
 
 
 @app.route("/api/v1.0/stations")
@@ -72,6 +73,7 @@ def stations():
         station_list.append(station_dict)
     
     return jsonify(station_list)
+
 
 
 @app.route("/api/v1.0/tobs")
@@ -94,6 +96,62 @@ def temperature():
         temps_list.append(temp_dict)
     
     return jsonify(temps_list)
+
+
+@app.route("/api/v1.0/<start>")
+def temp_start(start=''):
+    
+    min_t = session.query(func.min(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    all()
+    max_t = session.query(func.max(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    all()
+    avg_t = session.query(func.avg(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    all()
+
+    min_str = str(min_t[0][0])
+    max_str = str(max_t[0][0])
+    avg_str = str(avg_t[0][0])
+    
+    temps_summary = {
+            'Min': min_str,
+            'Max': max_str,
+            'Avg': avg_str
+    }
+    
+    return jsonify(temps_summary)
+
+
+
+@app.route("/api/v1.0/<start>/<end>")
+def temp_range(start="",end=""):
+    
+    min_t = session.query(func.min(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    filter(Measurement.date <= end).\
+    all()
+    max_t = session.query(func.max(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    filter(Measurement.date <= end).\
+    all()
+    avg_t = session.query(func.avg(Measurement.tobs)).\
+    filter(Measurement.date >= start).\
+    filter(Measurement.date <= end).\
+    all()
+
+    min_str = str(min_t[0][0])
+    max_str = str(max_t[0][0])
+    avg_str = str(avg_t[0][0])
+
+    temps_summary = {
+            'Min': min_str,
+            'Max': max_str,
+            'Avg': avg_str
+    }
+    
+    return jsonify(temps_summary)
 
 
 if __name__ == '__main__':
